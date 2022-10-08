@@ -3,6 +3,7 @@ import { Web3Provider } from "@ethersproject/providers";
 import styles from "../styles/Home.module.css";
 import { useEffect, useRef, useState } from "react";
 import { useViewerConnection } from "@self.id/react"; // easy way to connect and disconect to the ceramic network
+import { useViewerRecord } from "@self.id/react";
 import Web3Modal from "web3modal";
 import { EthereumAuthProvider } from "@self.id/web";
 export default function Home() {
@@ -25,8 +26,8 @@ export default function Home() {
     const wrappedProvider = await getProvider();
     const signer = wrappedProvider.getSigner();
     const address = await signer.getAddress();
-    return new EthereumAuthProvider(wrappedProvider.provider, address)
-  }
+    return new EthereumAuthProvider(wrappedProvider.provider, address);
+  };
 
   useEffect(() => {
     if (connection.status !== "connected") {
@@ -38,5 +39,46 @@ export default function Home() {
       });
     }
   });
-  return;
+  return (
+    <div className={styles.main}>
+      <div className={styles.navbar}>
+        <span className={styles.title}> Ceramic Demo</span>
+        {connection.status === "connected" ? (
+          <span className={styles.subtitle}>Connected</span>
+        ) : (
+          <buttton
+            onClick={connectToSelfId}
+            className={styles.buttton}
+            disabled={connection.status === "connecting"}
+          >
+            Connect
+          </buttton>
+        )}
+      </div>
+      <div className={styles.content}>
+        <div classname={styles.connection}>
+          {connection.status === "connected" ? (
+            <div>
+              <span classname={styles.subtitle}>
+                Your 3DID is {connection.selfID.id}
+              </span>
+              <RecordSetter />
+            </div>
+          ) : (
+            <span className={styles.subtitle}>
+              connect to your wallet to access your 3ID
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+function RecordSetter() {
+  const record = useViewerRecord("basicProfile");
+  const updateRecordName = async (name) => {
+    await record.merge({
+      name:name
+    })
+  }
 }
